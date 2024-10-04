@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # ----------- db ----------- #
+  postgres:
+    image: postgres:14.10
+    container_name: postgres
+    restart: always
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DATABASE=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+  # ----------- bus ----------- #
+  bus:
+    image: jrgiadach/soabus:v1
+    platform: linux/amd64
+    container_name: soabus
+    restart: always
+    ports:
+      - "5000:5000"
+
+  # ----------- servicios ----------- #
+  dbcon-service:
+    container_name: dbcon-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u connectionDB.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=clinicaUDP
