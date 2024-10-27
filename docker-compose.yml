@@ -1,4 +1,10 @@
-version: '3.8'
+
+volumes:
+  postgres_data:
+
+networks:
+  soanet:  # Red compartida
+    driver: bridge
 
 services:
   # ----------- db ----------- #
@@ -8,15 +14,18 @@ services:
     restart: always
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data 
     ports:
       - "5432:5432"
     env_file:
       - .env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DATABASE=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
+      - POSTGRESQL_USER=${POSTGRES_USER}
+      - POSTGRESQL_DATABASE=${POSTGRES_DB}
+      - ALLOW_EMPTY_PASSWORD=${HIDE_EMPTY_PASSWORD}
+      - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - soanet
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -27,6 +36,8 @@ services:
       - "8080:80"
     depends_on:
       - postgres
+    networks:
+      - soanet
 
   # ----------- bus ----------- #
   bus:
@@ -36,6 +47,8 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    networks:
+      - soanet
 
   # ----------- servicios ----------- #
   dbcon-service:
@@ -54,3 +67,62 @@ services:
       - SOABUS_HOST=soabus
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=clinicaUDP
+    networks:
+      - soanet
+  
+  usrlg-service:
+    container_name: usrlg-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u user_login.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+
+  usrmn-service:
+    container_name: usrmn-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u user_management.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+
+  # ----------- customers ----------- #
+  customers:
+    container_name: customers
+    restart: "no"
+    build:
+      context: ./customers
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u super-client.py"
+    volumes:
+      - ./customers:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+    stdin_open: true
+    tty: true
+
+ 
+

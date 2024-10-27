@@ -1,6 +1,7 @@
 import socket
 import json
 import sys
+import os 
 
 def main_client():
     """
@@ -9,7 +10,8 @@ def main_client():
     *   Dentro del try se programa la lógica correspondiente al servicio.
     """
     service = 'usrlg'
-    server_address = ('localhost', 5000)
+    soa_bus_host=os.getenv('SOABUS_HOST', 'soabus')
+    server_address = (soa_bus_host, 5000)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         try:

@@ -1,23 +1,19 @@
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuarios (
     id serial PRIMARY KEY,
-    usuario char(20) UNIQUE NOT NULL,
-    nombre char(20) NOT NULL,
-    cargo char(20) NOT NULL,
-    area char(30) NOT NULL,
-    password char(72) NOT NULL,
-    created_at date DEFAULT current_date NOT NULL,
-    updated_at date DEFAULT current_date NOT NULL
+    usuario varchar(20) UNIQUE NOT NULL,
+    nombre varchar(20) NOT NULL,
+    cargo varchar(20) NOT NULL,
+    area varchar(30) NOT NULL,
+    password varchar(72) NOT NULL,  -- Tipo de dato ajustado para flexibilidad
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+        ON UPDATE CURRENT_TIMESTAMP  -- Actualiza automáticamente cuando el registro se modifica
 );
-
-
-
-
-
-
 
 
 INSERT INTO usuario (usuario, nombre, cargo, area, password)
 VALUES
 ('felipej', 'felipej', 'medico', 'medicina general', '123'),
 ('ore', 'ore', 'paciente', 'paciente', '456'),
-('felipe', 'felipe', 'admin', 'medicina general', '789');
+('felipe', 'felipe', 'admin', 'medicina general', '789')
+ON CONFLICT (usuario) DO NOTHING;
