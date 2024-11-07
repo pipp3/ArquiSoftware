@@ -1,52 +1,73 @@
 import os
+import sys
 from client import get_session
 
-
-def print_menu():
-    print("Seleccione un archivo para ejecutar:")
+def print_menu_admin():
+    print("\nMenú de Administrador:")
     print("1. Servicio de manejo de usuarios")
+    print("2. Servicio de comentarios")
+    print("0. Salir")
 
-
+def print_menu_paciente():
+    print("\nMenú de Paciente:")
+    print("1. Servicio de comentarios")
+    print("0. Salir")
 
 def execute_file(file_path):
     try:
         os.system(f"python3 {file_path}")
     except Exception as e:
-        print(f"Error al ejecutar el archivo {file_path}: {e}")
+        print(f"Error al ejecutar el archivo {file_path}: {str(e)}")
 
+def handle_admin_menu():
+    while True:
+        print_menu_admin()
+        choice = input("Ingrese el número del archivo que desea ejecutar: ")
+        
+        if choice == '0':
+            break
+        
+        files = {
+            '1': 'user_management.py',
+            '2': 'comment.py'
+        }
+        
+        if choice in files:
+            execute_file(files[choice])
+        else:
+            print("Opción no válida. Intente de nuevo.")
 
-if __name__ == "__main__":
+def handle_paciente_menu():
+    while True:
+        print_menu_paciente()
+        choice = input("Ingrese el número del archivo que desea ejecutar: ")
+        
+        if choice == '0':
+            break
+        
+        if choice == '1':
+            execute_file('comment.py')
+        else:
+            print("Opción no válida. Intente de nuevo.")
+
+def main():
+    # Uncomment if needed for password/user reset
+    # execute_file("register.py")
+    
     execute_file("user_login.py")
     session = get_session()
-    if 'cargo' not in session or session['cargo'] == 'admin':
-        while True: 
-            print_menu()
-            choice = input("Ingrese el número del archivo que desea ejecutar (0 para salir): ")
+    
+    if not session or 'cargo' not in session:
+        print("No se ha iniciado sesión correctamente.")
+        sys.exit(1)
+    
+    if session['cargo'] == 'admin':
+        handle_admin_menu()
+    elif session['cargo'] == 'paciente':
+        handle_paciente_menu()
+    else:
+        print(f"Tipo de usuario no reconocido: {session['cargo']}")
+        sys.exit(1)
 
-            if choice == '0':
-                break
-            elif choice.isdigit() and 1 <= int(choice) <= 8:
-                file_name = [
-                    "user_management.py"
-                ][int(choice) - 1]
-                # Si es necesario se podria de  aqui mismo iniciar el servicio tambien
-                execute_file(file_name)
-            else:
-                print("Opción no válida. Intente de nuevo.")
-    if 'cargo' not in session or session['cargo'] == 'medico':
-        while True:
-            #print_menu2()
-            choice = input("Ingrese el número del archivo que desea ejecutar (0 para salir): ")
-
-            if choice == '0':
-                break
-            elif choice.isdigit() and 1 <= int(choice) <= 8:
-                file_name = [
-                    "asign_block.py",
-                    "comment.py",
-                ][int(choice) - 1]
-                # Si es necesario se podria de aqui mismo iniciar el servicio tambien
-                execute_file(file_name)
-            else:
-                print("Opción no válida. Intente de nuevo.")
-
+if __name__ == "__main__":
+    main()

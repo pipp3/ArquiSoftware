@@ -103,6 +103,22 @@ services:
       - SOABUS_HOST=soabus
     networks:
       - soanet
+  comment-service:
+    container_name: comment-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u comment.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
 
   # ----------- customers ----------- #
   customers:

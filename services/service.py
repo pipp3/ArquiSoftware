@@ -165,8 +165,6 @@ def get_user_id(sock, usuario):
         return db_request[0]['id']
 
 
-
-
 def main_service(service, process_request):
     """
     @   Servicio principal

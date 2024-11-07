@@ -23,6 +23,7 @@ def send_message(sock, service: str, data: dict):
         sock.sendall(encoded_msg)
     except json.JSONDecodeError as json_error:
         print(f'Error decodificando JSON: {json_error}')
+        print("Error al mandar el mensaje.")
         raise RuntimeError('No se pudo decodificar el JSON.')
     except socket.error as sock_error:
         print(f'Error de socket: {sock_error}')
@@ -52,6 +53,7 @@ def receive_response(sock):
         }
     except (ValueError, json.JSONDecodeError) as json_error:
         print(f'Error decodifiando JSON: {json_error}')
+        print("Error al recibir la respuesta.")
         raise RuntimeError('No se pudo decodificar el JSON.')
     except socket.error as sock_error:
         print(f'Error de socket: {sock_error}')
