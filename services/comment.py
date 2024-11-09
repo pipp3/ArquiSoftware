@@ -16,7 +16,7 @@ def create(sock, service,msg):
             "data":"Incomplete user fields"
         })
     db_sql = {
-        "sql":"INSERT INTO comentarios (paciente_id,comentario,tipo,calificacion) VALUES ("":paciente_id,:comentario,:tipo,:calificacion)",
+        "sql":"INSERT INTO comentario (paciente_id,comentario,tipo,calificacion,fecha) VALUES ("":paciente_id,:comentario,:tipo,:calificacion,CURRENT_TIMESTAMP)",
         "params":{
             "paciente_id":fields['paciente_id'],
             "comentario":fields['comentario'],
@@ -37,7 +37,7 @@ def create(sock, service,msg):
 def read(sock, service, msg):
     if msg["leer"]=="all":
         db_sql={
-            "sql":"SELECT * FROM comentarios ORDER BY id DESC LIMIT 5",
+            "sql":"SELECT * FROM comentario ORDER BY id DESC LIMIT 5",
             "params":{}
         }
         db_request=process_db_request(sock,db_sql)
@@ -52,7 +52,7 @@ def read(sock, service, msg):
     elif msg["leer"]=="some":
         if "id_comment" in msg:
             db_sql={
-                "sql":"SELECT * FROM comentarios WHERE id=:id_comment",
+                "sql":"SELECT * FROM comentario WHERE id=:id_comment",
                 "params":{
                     "id_comment":msg["id_comment"]
                 }
@@ -66,11 +66,11 @@ def read(sock, service, msg):
                 return incode_response(service,{
                     "data":db_request
                 })
-        elif "usuario" in msg:
+        elif "paciente_id" in msg:
             db_sql={
-                "sql":"SELECT * FROM comentarios WHERE paciente_id=:usuario ORDER BY id DESC LIMIT 5",
+                "sql":"SELECT * FROM comentario WHERE paciente_id=:paciente_id ORDER BY id DESC LIMIT 5",
                 "params":{
-                    "usuario":msg["usuario"]
+                    "paciente_id":msg["paciente_id"]
                 }
             }
             db_request=process_db_request(sock,db_sql)
@@ -84,7 +84,7 @@ def read(sock, service, msg):
                 })
         elif "tipo" in msg:
             db_sql={
-                "sql":"SELECT * FROM comentarios WHERE tipo=:tipo ORDER BY id DESC LIMIT 5",
+                "sql":"SELECT * FROM comentario WHERE tipo=:tipo ORDER BY id DESC LIMIT 5",
                 "params":{
                     "tipo":msg["tipo"]
                 }
@@ -108,7 +108,7 @@ def process_request(sock, data):
     service = decoded_data['service']
     response = json.dumps(decoded_data['data'])
 
-    if service != 'comment':
+    if service != 'comme':
         return incode_response(service, {
             "data": "Invalid Service: " + service
         })
@@ -143,4 +143,4 @@ if __name__ == "__main__":
     """
     from service import main_service, decode_response, incode_response, process_db_request
 
-    main_service('comment', main)  # Use "usrmn" as the service
+    main_service('comme', main)  # Use "usrmn" as the service

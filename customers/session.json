@@ -1,7 +1,7 @@
 {
-  "id": "6",
-  "usuario": "felipe3",
-  "cargo": "paciente",
-  "area": "none",
+  "id": "5",
+  "usuario": "felipe2",
+  "cargo": "admin",
+  "area": "medicina",
   "autenticado": "true"
 }

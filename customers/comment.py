@@ -1,4 +1,5 @@
 import socket
+import sys
 import os
 from client import input_field, service_request, print_select, print_ins_del_upd, get_session
 
@@ -20,19 +21,27 @@ def crear_comentario(sock, service):
         print("Opción no válida")
         return
 
-    comentario = input_field("Ingrese su comentario: ", max_length=200)
-    calificacion = input_field("Ingrese una calificación: ", max_length=1)
+    comentario = input("Ingrese su comentario: ")
+    calificacion = input_field("Ingrese una calificación (1 al 5): ", max_length=1)
     
     datos = {
         "crear": {
             "comentario": comentario,
-            "paciente_usuario": session['id'],
+            "paciente_id": session['id'],
             "tipo": tipo,
             "calificacion": calificacion
         }
     }
     status, data = service_request(sock, service, datos)
     print_ins_del_upd(status, data)
+    if status == 'OK':
+        print("Comentario creado con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al crear el comentario: {data}.")
+    
+
 
 def leer_comentario(sock, service):
     print("[ - Leer Comentario - ]")
@@ -53,10 +62,10 @@ def leer_comentario(sock, service):
             "id": id_comment
         }
     elif opcion == '3':
-        usuario = input_field("Ingrese usuario a buscar: ", max_length=20)
+        paciente_id = input_field("Ingrese ID del usuario a buscar: ", max_length=20)
         datos = {
             "leer": "some",
-            "usuario": usuario
+            "paciente_id": paciente_id
         }
     elif opcion == '4':
         tipo = input_field("Ingrese tipo a buscar: ", max_length=20)
@@ -82,7 +91,7 @@ def print_menu_paciente():
     print("[0] Salir.")
 
 def main_client():
-    service = 'comment'
+    service = 'comme'
     soa_bus_host = os.getenv('SOABUS_HOST', 'soabus')
     server_address = (soa_bus_host, 5000)
 
