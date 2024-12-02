@@ -21,12 +21,23 @@ def receive_message(sock, expected_length):
     @   Recibir mensaje
     *   Calcula el tamaño del mensaje de acuerdo al bus y lee los datos
     """
+    print(f"Esperando recibir {expected_length} bytes de datos del socket...")
     received_data = b''
+    
     while len(received_data) < expected_length:
-        data = sock.recv(expected_length - len(received_data))
+        remaining = expected_length - len(received_data)
+        print(f"Quedan por recibir {remaining} bytes...")
+        
+        data = sock.recv(remaining)
         if not data:
+            print("Conexión del socket cerrada prematuramente.")
             raise RuntimeError("Socket connection closed prematurely.")
+        
+        print(f"Datos recibidos: {data}")
         received_data += data
+        print(f"Datos totales recibidos hasta ahora: {len(received_data)} bytes.")
+    
+    print(f"Mensaje completo recibido con éxito. Tamaño total: {len(received_data)} bytes.")
     return received_data
 
 

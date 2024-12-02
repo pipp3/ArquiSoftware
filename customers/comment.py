@@ -21,13 +21,13 @@ def crear_comentario(sock, service):
         print("Opción no válida")
         return
 
-    comentario = input("Ingrese su comentario: ")
+    contenido = input("Ingrese su comentario: ")
     calificacion = input_field("Ingrese una calificación (1 al 5): ", max_length=1)
     
     datos = {
         "crear": {
-            "comentario": comentario,
-            "paciente_id": session['id'],
+            "contenido": contenido,
+            "rut_paciente": session['rut'],
             "tipo": tipo,
             "calificacion": calificacion
         }
@@ -56,16 +56,16 @@ def leer_comentario(sock, service):
             "leer": "all"
         }
     elif opcion == '2':
-        id_comment = input_field("Ingrese comentario a buscar: ", max_length=200)
+        id_comment = input_field("Ingrese ID del comentario a buscar: ", max_length=10)
         datos = {
             "leer": "some",
             "id": id_comment
         }
     elif opcion == '3':
-        paciente_id = input_field("Ingrese ID del usuario a buscar: ", max_length=20)
+        rut_paciente = input_field("Ingrese RUT del usuario a buscar: ", max_length=20)
         datos = {
             "leer": "some",
-            "paciente_id": paciente_id
+            "rut_paciente": rut_paciente
         }
     elif opcion == '4':
         tipo = input_field("Ingrese tipo a buscar: ", max_length=20)
@@ -99,12 +99,8 @@ def main_client():
         try:
             sock.connect(server_address)
             session = get_session()
-            
-            if not session or 'cargo' not in session:
-                print("Error: No hay sesión activa o no se encontró el cargo del usuario")
-                return
                 
-            if session['cargo'] == 'admin':
+            if session['rol'] == 'admin':
                 while True:
                     print_menu_admin()
                     choice = input_field("Ingrese el número de la opción que desea ejecutar: ", max_length=1)
@@ -115,7 +111,7 @@ def main_client():
                     else:
                         print("Opción no válida. Intente de nuevo.")
                         
-            elif session['cargo'] == 'paciente':
+            elif session['rol']=='':
                 while True:
                     print_menu_paciente()
                     choice = input_field("Ingrese el número de la opción que desea ejecutar: ", max_length=1)

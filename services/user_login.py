@@ -13,44 +13,60 @@ def login(sock, service, msg):
     """
     @   Función para insertar un usuario en la tabla usuario
     *   Recibe un diccionario en "crear", el cual debe incluir todos los campos de usuario requeridos.
-    *   Ejemplo:    "login" : { "usuario": "hola", "password": "hola" }
+    *   Ejemplo:    "login" : { "rut": "hola", "password": "hola" }
     """
     #   Opción de crear usuarios
     fields: dict = msg['login']
-    if 'usuario' and 'password' not in fields:
+    if 'rut' and 'password' not in fields:
         return incode_response(service, {
             "data": "Incomplete user fields."
         })
-    db_sql = {
-        "sql": "SELECT id,usuario,nombre,cargo,area,password FROM usuarios WHERE usuario = :usuario",
+    db_sql_paciente = {
+        "sql": "SELECT rut,nombre,apellido,celular,password FROM pacientes WHERE rut = :rut",
         "params": {
-            "usuario": fields['usuario']
+            "rut": fields['rut']
         }
     }
-    db_request = process_db_request(sock, db_sql)
+    db_request_paciente = process_db_request(sock, db_sql_paciente)
 
-    if not db_request:
-        datos = {
-            "id": "",
-            "usuario": "",
-            "cargo": "",
-            "area": "",
-            "autenticado": "false",
+    if not db_request_paciente:
+        db_sql_funcionario= {
+            "sql": "SELECT rut,nombre,apellido,celular,password,rol,area FROM funcionarios WHERE rut = :rut",
+            "params": {
+                "rut": fields['rut']
+            }
         }
-        return incode_response(service, {
-            "data": datos
-        })
+        db_request_funcionario = process_db_request(sock, db_sql_funcionario)
+
+        if not db_request_funcionario:
+            datos = {
+                "rut": "",
+                "nombre": "",
+                "apellido": "",
+                "celular": "",
+                "rol": "",
+                "area": "",
+                "autenticado": "false",
+            }
+            return incode_response(service, {
+                "data": datos
+            })
+        
+        user_data = db_request_funcionario[0]
+    else:
+        user_data = db_request_paciente[0]
     
-    user_data = db_request[0]
     stored_password_hash = user_data['password']
 
     # Verificamos la contraseña
     if verify_password(fields['password'], stored_password_hash):
         datos = {
-            "id": user_data['id'],
-            "usuario": user_data['usuario'],
-            "cargo": user_data['cargo'],
-            "area": user_data['area'],
+            "rut": user_data['rut'],
+            "nombre": user_data['nombre'],
+            "apellido": user_data['apellido'],
+            "celular": user_data['celular'],
+            "rol": user_data['rol'] if 'rol' in user_data else "",
+            "area": user_data['area'] if 'area' in user_data else "",
             "autenticado": "true",
         }
         return incode_response(service, {
@@ -58,10 +74,10 @@ def login(sock, service, msg):
         })
     else:
         datos = {
-            "id": "",
-            "usuario": "",
-            "cargo": "",
-            "area": "",
+            "rut": "",
+            "nombre": "",
+            "apellido": "",
+            "celular": "",
             "autenticado": "false",
         }
         return incode_response(service, {

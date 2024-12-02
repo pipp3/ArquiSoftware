@@ -103,6 +103,7 @@ services:
       - SOABUS_HOST=soabus
     networks:
       - soanet
+
   comment-service:
     container_name: comment-service
     restart: always
@@ -119,7 +120,110 @@ services:
       - SOABUS_HOST=soabus
     networks:
       - soanet
+  
+  history-service:
+    container_name: history-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u medical_history.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+      
+  notification-service:
+    container_name: notification-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u notification.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+    networks:
+      - soanet
+  
+  schedule-service:
+    container_name: schedule-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u schedule.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
 
+  cancel-service:
+    container_name: cancel-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u cancel.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+
+  reschedule-service:
+    container_name: reschedule-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u reschedule.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
+  
+  recipes-service:
+    container_name: recipes-service
+    restart: always
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    command: sh -c "sleep 6 && python -u recipes.py"
+    volumes:
+      - ./services:/app/
+    depends_on:
+      - postgres
+      - bus
+    environment:
+      - SOABUS_HOST=soabus
+    networks:
+      - soanet
   # ----------- customers ----------- #
   customers:
     container_name: customers

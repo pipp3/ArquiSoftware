@@ -2,19 +2,23 @@ import socket
 import os 
 from client import input_field, service_request, print_select, print_ins_del_upd
 def crear_usuario(sock, service):
-    print("[ - Crear Usuario - ]")
-    usuario = input_field("Ingrese un usuario: ", max_length=20)
-    nombre = input_field("Ingrese un nombre: ", max_length=20)
-    cargo = input_field("Ingrese un cargo: ", max_length=20)
-    area = input_field("Ingrese un area: ", max_length=10)
+    print("[ - Crear Funcionario Admin - ]")
+    rut = input_field("Ingrese un rut: ", max_length=20)
+    nombre = input_field("Ingrese un nombre: ", max_length=50)
+    apellido = input_field("Ingrese un apellido: ", max_length=50)
+    celular = input_field("Ingrese un celular: ", max_length=15)
+    area = input_field("Ingrese un area: ", max_length=20)
+    rol = input_field("Ingrese un rol: ", max_length=10)
     password = input_field("Ingrese un password: ", max_length=50)
     #   Definimos la opción que elija como un diccionario
     datos = {
         "crear": {
-            "usuario": usuario,
+            "rut": rut,
             "nombre": nombre,
-            "cargo": cargo,
+            "apellido": apellido,
+            "celular": celular,
             "area": area,
+            "rol": rol,
             "password": password
         }
     }

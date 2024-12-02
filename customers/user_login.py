@@ -18,12 +18,13 @@ def main_client():
             sock.connect(server_address)
 
             while True:
-                usuario = input_field("Ingrese un usuario: ", max_length=20)
+                print("[ - Inicio de Sesión - ]")
+                rut = input_field("Ingrese su RUT: ", max_length=20)
                 password = input_field("Ingrese su contraseña: ", max_length=50)
                 #   Definimos la opción que elija como un diccionario
                 datos = {
                     "login": {
-                        "usuario": usuario,
+                        "rut": rut,
                         "password": password
                     }
                 }

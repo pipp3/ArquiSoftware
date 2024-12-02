@@ -1,7 +1,9 @@
 {
-  "id": "5",
-  "usuario": "felipe2",
-  "cargo": "admin",
+  "rut": "203357575",
+  "nombre": "felipe",
+  "apellido": "munozz",
+  "celular": "936752459",
+  "rol": "medico",
   "area": "medicina",
   "autenticado": "true"
 }

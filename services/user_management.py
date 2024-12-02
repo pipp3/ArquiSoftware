@@ -19,129 +19,170 @@ def create(sock, service, msg):
     #   Opción de crear usuarios
     fields: dict = msg['crear']
     
+    if 'rol' not in fields:
 
-    if 'usuario' and 'nombre' and 'cargo' and 'area' and 'password' not in fields:
-        return incode_response(service, {
-            "data": "Incomplete user fields."
-        })
+        if 'rut' and 'nombre' and 'apellido' and 'celular' and 'password' not in fields:
+            return incode_response(service, {
+                "data": "Incomplete user fields."
+            })
     
-     # Hashear la contraseña
-    hashed_password = hash_password(fields['password'])
+        # Hashear la contraseña
+        hashed_password = hash_password(fields['password'])
     
     
-    db_sql = {
-        "sql": "INSERT INTO usuarios (usuario, nombre, cargo, area, password) VALUES ("
-               ":usuario, :nombre, :cargo, :area, :password)",
-        "params": {
-            "usuario": fields['usuario'],
-            "nombre": fields['nombre'],
-            "cargo": fields['cargo'],
-            "area": fields['area'],
-            "password": hashed_password.decode('utf-8')
-        }
-    }
-    db_request = process_db_request(sock, db_sql)
-    if 'affected_rows' in db_request:
-        return incode_response(service, {
-            "data": f"Se insertaron {db_request['affected_rows']} usuarios."
-        })
-    else:
-        return incode_response(service, {
-            "data": db_request
-        })
-
-
-def read(sock, service, msg):
-    """
-    @   Función para leer un o algunos usuarios
-    *   Si el campo 'leer' es 'all', lee todos los usuarios sin filtros.
-    *   Si el campo 'leer' es 'some', lee los usuarios de acuerdo su nombre de usuario, nombre, cargo o area.
-    *   Ejemplo:    "leer": "some", "usuario": "hola"
-    """
-    if msg['leer'] == 'all':
-        #   Opción de leer todos los usuarios
         db_sql = {
-            "sql": "SELECT id, usuario, nombre, cargo, area FROM usuarios"
+            "sql": "INSERT INTO pacientes (rut, nombre, apellido, celular, password) VALUES ("
+                ":rut, :nombre, :apellido, :celular, :password)",
+            "params": {
+                "rut": fields['rut'],
+                "nombre": fields['nombre'],
+                "apellido": fields['apellido'],
+                "celular": fields['celular'],
+                "password": hashed_password.decode('utf-8')
+            }
         }
         db_request = process_db_request(sock, db_sql)
-        if len(db_request) == 0:
+        if 'affected_rows' in db_request:
             return incode_response(service, {
-                "data": "No existen usuarios para la búsqueda solicitada."
+                "data": f"Se insertaron {db_request['affected_rows']} usuarios."
             })
         else:
             return incode_response(service, {
                 "data": db_request
             })
+    else:
+        if 'rut' and 'nombre' and 'apellido' and 'rol' and 'area' and 'password' not in fields:
+            return incode_response(service, {
+                "data": "Incomplete user fields."
+            })
+        # Hashear la contraseña
+        hashed_password = hash_password(fields['password'])
+    
+        db_sql = {
+            "sql": "INSERT INTO funcionarios (rut, nombre, apellido, rol, area, password,celular) VALUES ("
+                ":rut, :nombre, :apellido ,:rol, :area, :password, :celular)",
+            "params": {
+                "rut": fields['rut'],
+                "nombre": fields['nombre'],
+                "apellido": fields['apellido'],
+                "rol": fields['rol'],
+                "area": fields['area'],
+                "password": hashed_password.decode('utf-8'),
+                "celular": fields['celular']
+            }
+        }
+        db_request = process_db_request(sock, db_sql)
+        if 'affected_rows' in db_request:
+            return incode_response(service, {
+                "data": f"Se insertaron {db_request['affected_rows']} usuarios."
+            })
+        else:
+            return incode_response(service, {
+                "data": db_request
+            })
+
+def read(sock, service, msg):
+    """
+    @   Función para leer un o algunos usuarios
+    *   Si el campo 'leer' es 'all', lee todos los usuarios sin filtros.
+    *   Si el campo 'leer' es 'some', lee los usuarios de acuerdo su nombre de rut, nombre, cargo o area.
+    *   Ejemplo:    "leer": "some", "rut": "hola"
+    """
+    if msg['leer'] == 'all':
+        
+        if msg['tipo'] == "paciente" :
+            db_sql_paciente = {
+                "sql": "SELECT rut, nombre, apellido ,celular FROM pacientes"
+            }
+            db_request = process_db_request(sock, db_sql_paciente)
+            if len(db_request) == 0:
+                return incode_response(service, {
+                    "data": "No existen usuarios para la búsqueda solicitada."
+                })
+            else:
+                return incode_response(service, {
+                    "data": db_request
+                })
+        elif msg['tipo'] == 'funcionario':
+            db_sql_funcionario = {
+                "sql": "SELECT rut, nombre, apellido, celular, rol, area FROM funcionarios"
+            }
+            db_request = process_db_request(sock, db_sql_funcionario)
+            if len(db_request) == 0:
+                return incode_response(service, {
+                    "data": "No existen usuarios para la búsqueda solicitada."
+                })
+            else:
+                return incode_response(service, {
+                    "data": db_request
+                })
+        else:
+            return incode_response(service, {
+                "data": "No valid options."
+            })
+
     elif msg['leer'] == 'some':
         #   Opción de leer algunos usuarios, dependiendo de los campos.
-        if 'usuario' in msg:
-            #   Leer usuario según campo "usuario".
-            db_sql = {
-                "sql": "SELECT * FROM usuarios WHERE usuario = :usuario",
+        if 'rut' in msg:
+            #   Leer rut según campo "rut".
+            db_sql_paciente = {
+                "sql": "SELECT rut,nombre,apellido,celular FROM pacientes WHERE rut = :rut",
                 "params": {
-                    "usuario": msg['usuario']
+                    "rut": msg['rut']
                 }
             }
-            db_request = process_db_request(sock, db_sql)
-            if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existen usuarios para la búsqueda solicitada."
-                })
+            db_request = process_db_request(sock, db_sql_paciente)
+            if not db_request or len(db_request) == 0:
+                db_sql_funcionario = {
+                    "sql": "SELECT rut,nombre,apellido,celular,rol,area FROM funcionarios WHERE rut = :rut",
+                    "params": {
+                        "rut": msg['rut']
+                    }
+                }
+                db_request_funcionario = process_db_request(sock, db_sql_funcionario)
+                if len(db_request_funcionario) == 0:
+                    return incode_response(service, {
+                        "data": "No existen usuarios para la búsqueda solicitada."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request_funcionario
+                    })
             else:
                 return incode_response(service, {
                     "data": db_request
                 })
-        elif 'nombre' in msg:
-            #   Leer usuario según campo "nombre".
-            db_sql = {
-                "sql": "SELECT * FROM usuarios WHERE nombre = :nombre",
+        
+        elif 'celular' in msg:
+            #   Leer celular según campo "celular".
+            db_sql_paciente = {
+                "sql": "SELECT rut,nombre,apellido,celular FROM pacientes WHERE celular = :celular",
                 "params": {
-                    "nombre": msg['nombre']
+                    "celular": msg['celular']
                 }
             }
-            db_request = process_db_request(sock, db_sql)
-            if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existen usuarios para la búsqueda solicitada."
-                })
+            db_request = process_db_request(sock, db_sql_paciente)
+            if not db_request or len(db_request) == 0:
+                db_sql_funcionario = {
+                    "sql": "SELECT rut,nombre,apellido,celular,rol,area FROM funcionarios WHERE celular = :celular",
+                    "params": {
+                        "celular": msg['celular']
+                    }
+                }
+                db_request_funcionario = process_db_request(sock, db_sql_funcionario)
+                if len(db_request_funcionario) == 0:
+                    return incode_response(service, {
+                        "data": "No existen usuarios para la búsqueda solicitada."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request_funcionario
+                    })
             else:
                 return incode_response(service, {
                     "data": db_request
                 })
-        elif 'cargo' in msg:
-            #   Leer usuario según campo "cargo".
-            db_sql = {
-                "sql": "SELECT * FROM usuarios WHERE cargo = :cargo",
-                "params": {
-                    "cargo": msg['cargo']
-                }
-            }
-            db_request = process_db_request(sock, db_sql)
-            if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existen usuarios para la búsqueda solicitada."
-                })
-            else:
-                return incode_response(service, {
-                    "data": db_request
-                })
-        elif 'area' in msg:
-            #   Leer usuario según campo "area".
-            db_sql = {
-                "sql": "SELECT * FROM usuarios WHERE area = :area",
-                "params": {
-                    "area": msg['area']
-                }
-            }
-            db_request = process_db_request(sock, db_sql)
-            if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existen usuarios para la búsqueda solicitada."
-                })
-            else:
-                return incode_response(service, {
-                    "data": db_request
-                })
+        
         else:
             #   No se incluyeron campos de lectura.
             return incode_response(service, {
@@ -158,87 +199,186 @@ def update(sock, service, msg):
     """
     #   Opción de actualizar usuarios
     fields: dict = msg['actualizar']
-    if 'usuario' not in fields:
-        return incode_response(service, {
-            "data": "No user provided."
-        })
-    if 'nombre' in fields:
-        #   Actualizar nombre de usuario.
-        db_sql = {
-            "sql": "UPDATE usuarios SET nombre = :nombre WHERE usuario = :usuario",
-            "params": {
-                "nombre": fields['nombre'],
-                "usuario": fields['usuario']
-            }
-        }
-        db_request = process_db_request(sock, db_sql)
-        if 'affected_rows' in db_request:
+    
+    if 'tipo' in fields == 'paciente':
+        if 'rut' not in fields:
             return incode_response(service, {
-                "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                "data": "Incomplete user fields."
             })
         else:
+            if 'nombre' in fields:
+                db_sql = {
+                    "sql": "UPDATE pacientes SET nombre = :nombre WHERE rut = :rut",
+                    "params": {
+                        "nombre": fields['nombre'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'apellido' in fields:
+                db_sql = {
+                    "sql": "UPDATE pacientes SET apellido = :apellido WHERE rut = :rut",
+                    "params": {
+                        "apellido": fields['apellido'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'celular' in fields:
+                
+                db_sql = {
+                    "sql": "UPDATE pacientes SET celular = :celular WHERE rut = :rut",
+                    "params": {
+                        "celular": fields['celular'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'password' in fields:
+                # Hashear la contraseña
+                hashed_password = hash_password(fields['password'])
+                db_sql = {
+                    "sql": "UPDATE pacientes SET password = :password WHERE rut = :rut",
+                    "params": {
+                        "password": hashed_password.decode('utf-8'),
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            else:
+                return incode_response(service, {
+                    "data": "No valid options."
+                })
+    elif 'tipo' in fields == 'funcionario':
+        if 'rut' not in fields:
             return incode_response(service, {
-                "data": db_request
-            })
-    elif 'cargo' in fields:
-        #   Actualizar cargo de usuario.
-        db_sql = {
-            "sql": "UPDATE usuarios SET cargo = :cargo WHERE usuario = :usuario",
-            "params": {
-                "cargo": fields['cargo'],
-                "usuario": fields['usuario']
-            }
-        }
-        db_request = process_db_request(sock, db_sql)
-        if 'affected_rows' in db_request:
-            return incode_response(service, {
-                "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                "data": "Incomplete user fields."
             })
         else:
-            return incode_response(service, {
-                "data": db_request
-            })
-    elif 'area' in fields:
-        #   Actualizar area de usuario.
-        db_sql = {
-            "sql": "UPDATE usuarios SET area = :area WHERE usuario = :usuario",
-            "params": {
-                "area": fields['area'],
-                "usuario": fields['usuario']
-            }
-        }
-        db_request = process_db_request(sock, db_sql)
-        if 'affected_rows' in db_request:
-            return incode_response(service, {
-                "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
-            })
-        else:
-            return incode_response(service, {
-                "data": db_request
-            })
-    elif 'password' in fields:
-        #   Actualizar password de usuario.
-        db_sql = {
-            "sql": "UPDATE usuarios SET password = :password WHERE usuario = :usuario",
-            "params": {
-                "password": fields['password'],
-                "usuario": fields['usuario']
-            }
-        }
-        db_request = process_db_request(sock, db_sql)
-        if 'affected_rows' in db_request:
-            return incode_response(service, {
-                "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
-            })
-        else:
-            return incode_response(service, {
-                "data": db_request
-            })
+            if 'nombre' in fields:
+                db_sql = {
+                    "sql": "UPDATE funcionarios SET nombre = :nombre WHERE rut = :rut",
+                    "params": {
+                        "nombre": fields['nombre'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'apellido' in fields:
+                db_sql = {
+                    "sql": "UPDATE funcionarios SET apellido = :apellido WHERE rut = :rut",
+                    "params": {
+                        "apellido": fields['apellido'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'rol' in fields:
+                db_sql = {
+                    "sql": "UPDATE funcionarios SET rol = :rol WHERE rut = :rut",
+                    "params": {
+                        "rol": fields['rol'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'area' in fields:
+                db_sql = {
+                    "sql": "UPDATE funcionarios SET area = :area WHERE rut = :rut",
+                    "params": {
+                        "area": fields['area'],
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif 'password' in fields:
+                # Hashear la contraseña
+                hashed_password = hash_password(fields['password'])
+                db_sql = {
+                    "sql": "UPDATE funcionarios SET password = :password WHERE rut = :rut",
+                    "params": {
+                        "password": hashed_password.decode('utf-8'),
+                        "rut": fields['rut']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se actualizaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
     else:
-        #   No se incluyeron campos para actualizar.
         return incode_response(service, {
-            "data": "Incomplete SQL User Query. Provide some fields to update with."
+        "data": "No valid options."
         })
+       
 
 
 def delete(sock, service, msg):
@@ -246,22 +386,39 @@ def delete(sock, service, msg):
     @   Función para borrar un usuario de acuerdo a su nombre de usuario.
     *   Ejemplo:    "borrar": "juanito"
     """
-    #   Opción de crear usuarios
-    db_sql = {
-        "sql": "DELETE FROM usuarios WHERE usuario = :usuario",
-        "params": {
-            "usuario": msg['borrar'],
+    #   Opción de borrar usuarios
+    fields: dict = msg['borrar']
+    if 'rut' in msg:
+        
+        db_sql_paciente = {
+            "sql": "DELETE FROM pacientes WHERE rut = :rut",
+            "params": {
+                "rut": fields['rut']
+            }
         }
-    }
-    db_request = process_db_request(sock, db_sql)
-    if 'affected_rows' in db_request:
-        return incode_response(service, {
-            "data": f"Se eliminaron {db_request['affected_rows']} usuarios."
-        })
-    else:
-        return incode_response(service, {
-            "data": db_request
-        })
+        db_request = process_db_request(sock, db_sql_paciente)
+        if not db_request or len(db_request) == 0:
+            db_sql_funcionario = {
+                "sql": "DELETE FROM funcionarios WHERE rut = :rut",
+                "params": {
+                    "rut": fields['rut']
+                }
+            }
+            db_request_funcionario = process_db_request(sock, db_sql_funcionario)
+            if len(db_request_funcionario) == 0:
+                return incode_response(service, {
+                    "data": "No existen usuarios para la búsqueda solicitada."
+                })
+            else:
+                return incode_response(service, {
+                    "data": db_request_funcionario
+                })
+        
+        else:
+            return incode_response(service, {
+                "data": db_request
+            })
+
 
 
 def process_request(sock, data):
