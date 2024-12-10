@@ -15,29 +15,18 @@ def send_message(sock, service: str, data: dict):
     *   Luego, se envia siguiendo el formato del bus por el socket.
     """
     try:
-        print(f"Preparando mensaje para el servicio: {service}")
         data = json.dumps(data)
-        print(f"Datos convertidos a JSON: {data}")
-        
         msg_len = len(service) + len(data)
-        print(f"Longitud del mensaje: {msg_len}")
-        
         message = f"{msg_len:05d}{service}{data}"
         encoded_msg = message.encode('utf-8')
-        
-        print(f"Mensaje codificado: {encoded_msg}")
         sock.sendall(encoded_msg)
-        print(f"Mensaje enviado con éxito.")
-        
     except json.JSONDecodeError as json_error:
-        print(f'Error decodificando JSON: {json_error}')
-        raise RuntimeError('No se pudo decodificar el JSON.')
+        raise RuntimeError('No se pudo decodificar el JSON.') from json_error
     except socket.error as sock_error:
-        print(f'Error de socket: {sock_error}')
-        raise RuntimeError('No se pudo recibir respuesta del socket.')
+        raise RuntimeError('No se pudo recibir respuesta del socket.') from sock_error
     except Exception as e:
-        print(f'Error inesperado: {e}')
-        raise RuntimeError('Ocurrio un error inesperado.')
+        raise RuntimeError('Ocurrio un error inesperado.') from e
+
 
 
 def receive_response(sock):
@@ -48,25 +37,11 @@ def receive_response(sock):
     *   Finalmente, retorna un JSON con 'status', 'service' y 'data'.
     """
     try:
-        print("----------------------------------")
-        print("Esperando respuesta del socket...")
-
-
-        
         response_len = int(sock.recv(5).decode())
-        print(f"Longitud de la respuesta: {response_len}")
-        
         response_service = sock.recv(5).decode()
-        print(f"Servicio recibido: {response_service}")
-        
         response_data = sock.recv(response_len - 5).decode()
-        print(f"Datos de la respuesta recibidos: {response_data}")
-        
         response_status = response_data[:2]
-        print(f"Estado de la respuesta: {response_status}")
-        
         response_json = json.loads(response_data[2:])
-        print(f"Datos decodificados: {response_json}")
         
         return {
             "status": response_status,
@@ -75,14 +50,12 @@ def receive_response(sock):
         }
     
     except (ValueError, json.JSONDecodeError) as json_error:
-        print(f'Error decodificando JSON: {json_error}')
-        raise RuntimeError('No se pudo decodificar el JSON.')
+        raise RuntimeError('No se pudo decodificar el JSON.') from json_error
     except socket.error as sock_error:
-        print(f'Error de socket: {sock_error}')
-        raise RuntimeError('No se pudo recibir respuesta del socket.')
+        raise RuntimeError('No se pudo recibir respuesta del socket.') from sock_error
     except Exception as e:
-        print(f'Error inesperado: {e}')
-        raise RuntimeError('Ocurrio un error inesperado.')
+        raise RuntimeError('Ocurrio un error inesperado.') from e
+
     
 
 
@@ -130,25 +103,18 @@ def service_request(sock, service, datos):
     *   Envía un mensaje al servicio especificado y espera la respuesta.
     """
     try:
-        print("----------------------------------")
-        print(f"Preparando solicitud para el servicio: {service}")
-        print(f"Datos a enviar: {datos}")
-        
         # Enviamos el mensaje mediante el socket al servicio
         send_message(sock, service, datos)
-        print("Mensaje enviado exitosamente.")
         
         # Recibimos la respuesta desde el socket
-        print("Esperando respuesta del socket...")
         respuesta = receive_response(sock)
-        print(f"Respuesta recibida: {respuesta}")
         
         # Retornamos el estado y los datos
         return respuesta['status'], respuesta['data']
     
     except Exception as e:
-        print(f"Error durante la solicitud al servicio '{service}': {e}")
-        raise
+        raise RuntimeError(f"Error durante la solicitud al servicio '{service}'.") from e
+
 
 
 

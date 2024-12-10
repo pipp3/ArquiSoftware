@@ -63,7 +63,7 @@ def read(sock, service, msg):
     elif msg['leer']=='some':
         if 'rut_paciente' in msg:
             db_sql={
-                "sql":"SELECT * FROM citas WHERE rut_paciente=:rut_paciente AND estado='cancelado",
+                "sql":"SELECT * FROM citas WHERE rut_paciente=:rut_paciente AND estado='cancelado'",
                 "params":{
                     "rut_paciente":msg["rut_paciente"]
                 }
@@ -79,7 +79,7 @@ def read(sock, service, msg):
                 })
         elif 'rut_medico' in msg:
             db_sql={
-                "sql":"SELECT * FROM citas WHERE rut_medico=:rut_medico AND estado='cancelado",
+                "sql":"SELECT * FROM citas WHERE rut_medico=:rut_medico AND estado='cancelado'",
                 "params":{
                     "rut_medico":msg["rut_medico"]
                 }

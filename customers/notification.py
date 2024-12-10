@@ -5,7 +5,7 @@ from client import input_field, service_request, print_select, print_ins_del_upd
 
 def crear_notificacion(sock, service):
     print("[ - Crear Notificación - ]")
-    cita_id = input("Ingrese el id de la cita: ")
+    cita_id = input("Ingrese el ID de la cita: ")
     mensaje = input("Ingrese el mensaje de la notificación: ")
     destino = input("Ingrese el celular destino de la notificación: ")
 
@@ -87,7 +87,6 @@ def leer_notificacion_paciente(sock, service):
         print("[ - Leer Notificación - ]")
         print("[1] Leer tus últimas 5 notificaciones.")
         print("[2] Buscar por ID.")
-        print("[3] Leer tu última notificación.")
         print("[0] Salir.")
 
         opcion = input_field("Su elección: ", max_length=1)
@@ -97,32 +96,32 @@ def leer_notificacion_paciente(sock, service):
             print("Saliendo del menú de notificaciones.")
             break
 
-        # Construir datos según opción seleccionada
-        datos = construir_datos(opcion, session)
-        if not datos:
-            print("Opción no válida, intente nuevamente.")
-            continue
+        # Leer las últimas 5 notificaciones
+        elif opcion == '1':
+            datos = {
+                "leer": "some",
+                "rut": session['rut']
+            }
+            status, data = service_request(sock, service, datos)
+            print_select(status, data)
+        
+        # Buscar por ID
+        elif opcion == '2':
+            id = input_field("Ingrese el ID a buscar: ", max_length=10)
+            datos = {
+                "leer": "some",
+                "id_noti": id,
+                "rut": session['rut']
+            }
+            status, data = service_request(sock, service, datos)
+            print_select(status, data)
+        
+        
+        else:
+            print("Opción no válida.")
+            return
 
-        # Realizar la solicitud al servicio
-        status, data = service_request(sock, service, datos)
-        print_select(status, data)
 
-def construir_datos(opcion, session):
-    """
-    Construye el diccionario de datos basado en la opción seleccionada.
-    """
-    if opcion == '1':  # Leer últimas 5 notificaciones
-        return {"leer": "all", "usuario_id": session['id']}
-    elif opcion == '2':  # Buscar por ID
-        id_notificacion = input_field("Ingrese el ID a buscar: ", max_length=10)
-        if not id_notificacion.isdigit():
-            print("El ID debe ser numérico.")
-            return None
-        return {"leer": "some", "usuario_id": session['id'], "id": id_notificacion}
-    elif opcion == '3':  # Leer última notificación
-        return {"leer": "last", "usuario_id": session['id']}
-    else:
-        return None
 
 def print_menu_admin():
     print("\nServicio de notificaciones:")
@@ -154,7 +153,7 @@ def main_client():
                         leer_notificacion(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
-            elif session['rol']=='':
+            elif session['rol']=='' or session['rol']=='medico':
                     leer_notificacion_paciente(sock, service)
                         
             else:

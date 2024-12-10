@@ -15,52 +15,48 @@ def read(sock, service, msg):
     *   Si el mensaje es 'some' se leerán los registros que cumplan con los campos del mensaje.
     """
     if msg['leer'] == 'some':
-      if 'rut_paciente' in msg:
+        if 'rut_paciente' in msg:
         
-        db_sql = {
-            "sql": "SELECT * FROM historial_medico WHERE rut_paciente = :rut_paciente",
-            "params": {
-                "rut_paciente": msg['rut_paciente']
+            db_sql = {
+                "sql": "SELECT * FROM historial_medico WHERE rut_paciente = :rut_paciente",
+                "params": {
+                    "rut_paciente": msg['rut_paciente']
+                }
             }
-        }
-        db_request=process_db_request(sock,db_sql)
-        if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existe historial para la búsqueda solicitada."
-                })
-        else:
-                return incode_response(service, {
-                    "data": db_request
-                })
-      else:
-        #   No se incluyeron campos de lectura.
-         return incode_response(service, {
-                    "data": "Query SQL Incompleta. Por favor revisar los campos solicitados."
+            db_request=process_db_request(sock,db_sql)
+            if len(db_request) == 0:
+                    return incode_response(service, {
+                        "data": "No existe historial para la búsqueda solicitada."
                     })
-    elif 'rut_medico' in msg:
-        db_sql = {
-            "sql": "SELECT * FROM historial_medico WHERE rut_medico = :rut_medico",
-            "params": {
-                "rut_medico": msg['rut_medico']
+            else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+    
+        elif 'rut_medico' in msg:
+            db_sql = {
+                "sql": "SELECT * FROM historial_medico WHERE rut_medico = :rut_medico",
+                "params": {
+                    "rut_medico": msg['rut_medico']
+                }
             }
-        }
-        db_request=process_db_request(sock,db_sql)
-        if len(db_request) == 0:
-                return incode_response(service, {
-                    "data": "No existe historial para la búsqueda solicitada."
-                })
+            db_request=process_db_request(sock,db_sql)
+            if len(db_request) == 0:
+                    return incode_response(service, {
+                        "data": "No existe historial para la búsqueda solicitada."
+                    })
+            else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
         else:
-                return incode_response(service, {
-                    "data": db_request
-                })
-    else:
-        return incode_response(service, {
-            "data": "No valid options."
-        })
+            return incode_response(service, {
+                "data": "No valid options."
+            })
 
 def create(sock, service, msg):
     fields: dict = msg['crear']
-    if 'descripcion' and 'paciente_id' not in fields:
+    if 'descripcion' and 'rut_paciente' and "rut_medico" not in fields:
         return incode_response(service, {
             "data": "Incomplete user fields"
         })
@@ -70,9 +66,10 @@ def create(sock, service, msg):
     """
     
     db_sql = {
-                "sql": "INSERT INTO historial_medico (rut_paciente,descripcion,fecha) VALUES ("":rut_paciente,:descripcion,CURRENT_TIMESTAMP)",
+                "sql": "INSERT INTO historial_medico (rut_paciente,rut_medico,descripcion,fecha) VALUES ("":rut_paciente,:rut_medico,:descripcion,CURRENT_TIMESTAMP)",
                 "params": {
                     "rut_paciente": fields['rut_paciente'],
+                    "rut_medico": fields['rut_medico'],
                     "descripcion": fields['descripcion']
                 }
             }
@@ -93,36 +90,28 @@ def update(sock, service, msg):
     *   Recibe el socket, el servicio y el mensaje.
     """
     fields: dict = msg['actualizar']
-    if 'descripcion' and "id" not in fields:
+    if 'descripcion' not in fields:
         return incode_response(service, {
             "data": "Incomplete user fields"
         })
 
-    if 'actualizar' in msg:
-        if 'descripcion' in msg:
-            db_sql = {
-                "sql": "UPDATE historial_medico SET descripcion=:descripcion WHERE id=:id",
-                "params": {
-                    "descripcion": msg['descripcion'],
-                    "id": msg['id']
-                }
-            }
-            db_request=process_db_request(sock,db_sql)
-            if 'affected_rows' in db_request:
-                return incode_response(service, {
-                    "data": f"Se actualizaron {db_request['affected_rows']} historial(es) médico(s)."
-                })
-            return incode_response(service, {
-                "data": "Historial médico actualizado con éxito."
-            })
-        else:
-            return incode_response(service, {
-                "data": "No valid options."
-            })
+    db_sql = {
+            "sql": "UPDATE historial_medico SET descripcion=:descripcion WHERE id=:id",
+            "params": {
+            "descripcion": fields['descripcion'],
+            "id": fields['id']
+        }
+    }
+    db_request=process_db_request(sock,db_sql)
+    if 'affected_rows' ==0:
+        return incode_response(service, {
+            "data": "No se actualizó ningún historial médico."
+        })
     else:
         return incode_response(service, {
-            "data": "No valid options."
-        })   
+            "data": f"Se actualizó {db_request['affected_rows']} historial(es) médico(s)."
+        })
+          
 def delete(sock, service, msg):
     """
     @   Función para borrar un registro en la tabla

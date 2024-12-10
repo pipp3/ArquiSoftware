@@ -4,19 +4,17 @@ import os
 from client import input_field, service_request, print_select, print_ins_del_upd, get_session
 
 def crear_historial_medico(sock, service):
-    #session=get_session()
+    session=get_session()
     print("[ - Crear Historial Médico - ]")
     print("Ingrese el rut del paciente:")
     rut_paciente = input_field("Su elección: ", max_length=15)
-    print("Ingrese el rut del medico:")
-    rut_medico = input_field("Su elección: ", max_length=15)
     print("Ingrese la descripcion del historial médico:")
     descripcion = input_field("Su elección: ", max_length=200)
 
     datos = {
         "crear": {
             "rut_paciente": rut_paciente,
-            "rut_medico": rut_medico,
+            "rut_medico": session['rut'],
             "descripcion": descripcion
         }
     }

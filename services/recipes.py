@@ -122,29 +122,26 @@ def delete(sock, service, msg):
     fields: dict = msg['eliminar']
 
     # Realizar la eliminación de la receta en la base de datos
-    if 'id' in fields:
-        db_sql = {
-            "sql": """
-                DELETE FROM recetas
-                WHERE id = :id
-            """,
-            "params": {
-                "id": fields['id']
-            }
+    
+    db_sql = {
+        "sql": """
+            DELETE FROM recetas
+            WHERE id = :id
+        """,
+        "params": {
+            "id": fields['id']
         }
-        db_request = process_db_request(sock, db_sql)
-        if len(db_request) == 0:
-            return incode_response(service, {
-                "data": "Recipe not found"
-            })
-        else:
-            return incode_response(service, {
-                "data": "Recipe deleted successfully"
-            })
+    }
+    db_request = process_db_request(sock, db_sql)
+    if len(db_request) == 0:
+        return incode_response(service, {
+            "data": "Recipe not found"
+        })
     else:
         return incode_response(service, {
-            "data": "Incomplete user fields"
+            "data": "Recipe deleted successfully"
         })
+    
 
 
 def process_request(sock, data):

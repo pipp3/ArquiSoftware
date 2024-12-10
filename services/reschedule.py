@@ -31,6 +31,31 @@ def actualiza_cita(sock, service, msg):
             return incode_response(service, {
                 "data": "Cita re-agendada con éxito"
             })
+def read(sock, service, msg):
+    """
+    @   Función para leer las citas de un paciente.
+    """
+    if msg["leer"]=="some" and 'rut_paciente' in msg:
+        db_sql = {
+            "sql": """
+                SELECT *
+                FROM citas
+                WHERE rut_paciente = :rut_paciente
+            """,
+            "params": {
+                "rut_paciente": msg['rut_paciente']
+            }
+        }
+        db_request = process_db_request(sock, db_sql)
+        if len(db_request) == 0:
+            return incode_response(service, {
+                "data": "No se encontraron citas"
+            })
+        else:
+            return incode_response(service, {
+                "data": db_request
+            })
+    
 
 def process_request(sock, data):
     """
@@ -50,6 +75,8 @@ def process_request(sock, data):
         msg = json.loads(response)
         if 'actualizar' in msg:
             return actualiza_cita(sock=sock, service=service, msg=msg)
+        if 'leer' in msg:
+            return read(sock=sock, service=service, msg=msg)
 
         else:
             return incode_response(service, {

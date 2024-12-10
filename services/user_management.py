@@ -162,7 +162,7 @@ def read(sock, service, msg):
                 }
             }
             db_request = process_db_request(sock, db_sql_paciente)
-            if not db_request or len(db_request) == 0:
+            if len(db_request) == 0:
                 db_sql_funcionario = {
                     "sql": "SELECT rut,nombre,apellido,celular,rol,area FROM funcionarios WHERE celular = :celular",
                     "params": {
@@ -200,7 +200,7 @@ def update(sock, service, msg):
     #   Opción de actualizar usuarios
     fields: dict = msg['actualizar']
     
-    if 'tipo' in fields == 'paciente':
+    if fields['tipo'] == 'paciente':
         if 'rut' not in fields:
             return incode_response(service, {
                 "data": "Incomplete user fields."
@@ -279,9 +279,9 @@ def update(sock, service, msg):
                     })
             else:
                 return incode_response(service, {
-                    "data": "No valid options."
+                    "data": "No valid options. aqui 1"
                 })
-    elif 'tipo' in fields == 'funcionario':
+    elif fields["tipo"] == 'funcionario':
         if 'rut' not in fields:
             return incode_response(service, {
                 "data": "Incomplete user fields."
@@ -376,7 +376,7 @@ def update(sock, service, msg):
                     })
     else:
         return incode_response(service, {
-        "data": "No valid options."
+        "data": "No valid options. aqui2"
         })
        
 
@@ -387,37 +387,35 @@ def delete(sock, service, msg):
     *   Ejemplo:    "borrar": "juanito"
     """
     #   Opción de borrar usuarios
-    fields: dict = msg['borrar']
-    if 'rut' in msg:
         
-        db_sql_paciente = {
+    db_sql_paciente = {
             "sql": "DELETE FROM pacientes WHERE rut = :rut",
             "params": {
-                "rut": fields['rut']
+                "rut": msg['borrar']
             }
         }
-        db_request = process_db_request(sock, db_sql_paciente)
-        if not db_request or len(db_request) == 0:
-            db_sql_funcionario = {
+    db_request = process_db_request(sock, db_sql_paciente)
+    if 'affected_rows' in db_request:
+            return incode_response(service, {
+                "data": f"Se elimino {db_request['affected_rows']} usuarios."
+            })
+    else:
+        db_sql_funcionario = {
                 "sql": "DELETE FROM funcionarios WHERE rut = :rut",
                 "params": {
-                    "rut": fields['rut']
+                    "rut": msg['borrar']
                 }
             }
-            db_request_funcionario = process_db_request(sock, db_sql_funcionario)
-            if len(db_request_funcionario) == 0:
+        db_request_funcionario = process_db_request(sock, db_sql_funcionario)
+        if 'affected_rows' in db_request_funcionario:
                 return incode_response(service, {
-                    "data": "No existen usuarios para la búsqueda solicitada."
+                    "data": f"Se elimino {db_request_funcionario['affected_rows']} usuarios."
                 })
-            else:
+        else:
                 return incode_response(service, {
                     "data": db_request_funcionario
                 })
         
-        else:
-            return incode_response(service, {
-                "data": db_request
-            })
 
 
 
@@ -447,7 +445,7 @@ def process_request(sock, data):
             return delete(sock=sock, service=service, msg=msg)
         else:
             return incode_response(service, {
-                "data": "No valid options."
+                "data": "No valid options.aqui3"
             })
     except Exception as err:
         return incode_response(service, {

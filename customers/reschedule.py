@@ -23,14 +23,51 @@ def actualizar_hora(sock, service):
     else:
         print(f"Error al re-agendar la hora: {data}.")
 
+def listar_citas(sock, service):
+    session = get_session()
+    print("[ - Listar Citas de un paciente - ]")
+    rut_paciente = input_field("Ingrese el RUT del paciente: ", max_length=20)
+    datos = {
+        "leer":"some",
+        "rut_paciente": rut_paciente
+        
+    }
+    status, data = service_request(sock, service, datos)
+    print_select(status, data)
+    if status == 'OK':
+        print("Citas mostradas con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al mostrar las citas: {data}.")
+
+def listar_mis_citas(sock, service):
+    session = get_session()
+    print("[ - Listar Mis Citas - ]")
+    datos = {
+        "leer":"some",
+        "rut_paciente": session['rut']
+        
+    }
+    status, data = service_request(sock, service, datos)
+    print_select(status, data)
+    if status == 'OK':
+        print("Citas mostradas con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al mostrar las citas: {data}.")
+
 def print_menu_admin():
     print("\n[ - Servicio de Re-Agendacion de Horas (Admin) - ]")
     print("[1] Re-Agendar Hora.")
+    print("[2] Listar Citas de un paciente.")
     print("[0] Salir.")
 
 def print_menu_paciente():
     print("\n[ - Servicio de Re-Agendacionn de Horas (Paciente) - ]")
     print("[1] Re-Agendar Hora.")
+    print("[2] Listar Mis Citas.")
     print("[0] Salir.")
 
 def main_client():
@@ -51,6 +88,8 @@ def main_client():
                         break
                     elif choice == '1':
                         actualizar_hora(sock=sock,service= service)
+                    elif choice == '2':
+                        listar_citas(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
                         
@@ -62,6 +101,8 @@ def main_client():
                         break
                     elif choice == '1':
                         actualizar_hora(sock=sock,service= service)
+                    elif choice == '2':
+                        listar_mis_citas(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
             else:
