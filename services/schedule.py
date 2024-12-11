@@ -122,7 +122,41 @@ def read(sock, service, msg):
             return incode_response(service, {
                 "data": query_result
             })
-    
+
+def update(sock, service, msg):
+    """
+    @   Función para actualizar un comentario
+    *   Recibe el socket, el servicio y el mensaje.
+    *   Realiza una validación de los campos que se deben enviar.
+    *   Realiza una consulta a la base de datos para actualizar el comentario.
+    """
+    fields: dict = msg['actualizar']
+
+    if 'id' not in fields:
+        return incode_response(service, {
+            "data": "Incomplete user fields"
+        })
+
+    update_sql = {
+        "sql": """
+            UPDATE citas
+            SET estado = 'completada'
+            WHERE id = :id;
+        """,
+        "params": {
+            "id": fields['id']
+        }
+    }
+    update_result = process_db_request(sock, update_sql)
+
+    if len(update_result) > 0:
+        return incode_response(service, {
+            "data": "Cita marcada como atendida."
+        })
+    else:
+        return incode_response(service, {
+            "data": "Hubo un error al marcar la cita como atendida. Intente nuevamente."
+        })
 
 def process_request(sock, data):
     """
@@ -144,6 +178,8 @@ def process_request(sock, data):
             return read(sock=sock, service=service, msg=msg)
         elif 'crear' in msg:
             return create(sock=sock, service=service, msg=msg)
+        elif 'actualizar' in msg:
+            return update(sock=sock, service=service, msg=msg)
         else:
             return incode_response(service, {
                 "data": "No valid options."

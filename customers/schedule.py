@@ -47,10 +47,34 @@ def ver_bloques_disponibles(sock, service):
     else:
         print(f"Error al mostrar bloques disponibles: {data}.")
 
-def print_menu():
-    print("\nMenú de Agendamiento:")
+def marcar_cita_atendida(sock, service):
+    print("[ - Marcar cita como atendida - ]")
+    cita_id = input("Ingrese el ID de la Cita: ")
+    datos = {
+        "actualizar": {
+            "id": cita_id,
+        }
+    }
+    status, data = service_request(sock, service, datos)
+    print_ins_del_upd(status, data)
+    if status == 'OK':
+        print("Cita marcada como atendida con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al marcar la cita como atendida: {data}.")
+
+def print_menu_paciente():
+    print("\nMenú de Agendamiento (Paciente):")
     print("1. Agendar hora")
     print("2. Ver horas disponibles")
+    print("0. Salir")
+
+def print_menu_admin():
+    print("\nMenú de Agendamiento (ADMIN):")
+    print("1. Agendar hora")
+    print("2. Ver horas disponibles")
+    print("3. Marcar cita como atendida")
     print("0. Salir")
 
 def main_client():
@@ -63,12 +87,26 @@ def main_client():
             sock.connect(server_address)
             session = get_session()
             
-    
-                
-            if session['rol'] == 'admin' or session['rol']=='' :
+            if session['rol'] == 'admin':
                 while True:
                     print("Bienvenido al sistema de agendamiento")
-                    print_menu()
+                    print_menu_admin()
+                    choice = input("Ingrese su opcion: ")
+                    if choice == '0':
+                        break
+                    elif choice == '1':
+                        agendar_hora(sock=sock,service=service)
+                    elif choice == '2':
+                        ver_bloques_disponibles(sock=sock,service=service)
+                    elif choice == '3':
+                        marcar_cita_atendida(sock=sock,service=service)
+                    else:
+                        print("Opción no válida. Intente de nuevo.")
+                
+            elif session['rol']=='' :
+                while True:
+                    print("Bienvenido al sistema de agendamiento")
+                    print_menu_paciente()
                     choice = input("Ingrese su opcion: ")
                     if choice == '0':
                         break

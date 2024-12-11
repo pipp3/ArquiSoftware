@@ -13,13 +13,16 @@ def actualiza_cita(sock, service, msg):
         db_sql = {
             "sql": """
                 UPDATE citas
-                SET fecha = :fecha
+                SET fecha = :fecha,
+                bloque_horario_id = :bloque_horario_id
                 WHERE id = :cita_id
-                AND estado != 'cancelado' 
+                AND estado != 'cancelado'
+                AND estado != 'completada';
             """,
             "params": {
                 "cita_id": msg['cita_id'],
                 "fecha": msg['fecha'],
+                "bloque_horario_id": msg['bloque_horario_id']
             }
         }
         db_request = process_db_request(sock, db_sql)
@@ -38,12 +41,66 @@ def read(sock, service, msg):
     if msg["leer"]=="some" and 'rut_paciente' in msg:
         db_sql = {
             "sql": """
-                SELECT *
-                FROM citas
-                WHERE rut_paciente = :rut_paciente
+                SELECT 
+                    c.id AS cita_id,
+                    c.rut_medico,
+                    c.rut_paciente,
+                    bh.hora_inicio,
+                    bh.hora_fin,
+                    c.motivo AS motivo,
+                    c.estado,
+                    c.fecha
+                FROM 
+                    citas c
+                JOIN 
+                    bloque_horario bh
+                ON 
+                    c.bloque_horario_id = bh.id
+                WHERE 
+                    c.rut_paciente = :rut_paciente
+                    AND c.estado != 'cancelado'
+                    AND c.estado != 'completada';
+
             """,
             "params": {
                 "rut_paciente": msg['rut_paciente']
+            }
+        }
+        db_request = process_db_request(sock, db_sql)
+        if len(db_request) == 0:
+            return incode_response(service, {
+                "data": "No se encontraron citas"
+            })
+        else:
+            return incode_response(service, {
+                "data": db_request
+            })
+    elif msg["leer"]=="some" and 'rut_medico' in msg:
+        db_sql = {
+            "sql": """
+                SELECT 
+                    c.id AS cita_id,
+                    c.rut_medico,
+                    c.rut_paciente,
+                    bh.hora_inicio,
+                    bh.hora_fin,
+                    c.motivo AS motivo,
+                    c.estado,
+                    c.fecha
+                FROM 
+                    citas c
+                JOIN 
+                    bloque_horario bh
+                ON 
+                    c.bloque_horario_id = bh.id
+                WHERE 
+                    c.rut_medico = :rut_medico
+                    AND c.estado != 'cancelado'
+                    AND c.estado != 'completada';
+
+            """,
+            "params": {
+                "rut_medico": msg['rut_medico']
             }
         }
         db_request = process_db_request(sock, db_sql)

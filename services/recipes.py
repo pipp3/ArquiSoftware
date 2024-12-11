@@ -93,7 +93,7 @@ def read(sock, service, msg):
                 FROM recetas r
                 INNER JOIN citas c ON r.cita_id = c.id
                 WHERE c.rut_paciente = :rut_paciente
-                ORDER BY r.fecha DESC
+                ORDER BY r.id DESC
                 LIMIT 10
             """,
             "params": {
@@ -119,7 +119,6 @@ def delete(sock, service, msg):
     @   Función delete
     *   Función para eliminar una receta.
     """
-    fields: dict = msg['eliminar']
 
     # Realizar la eliminación de la receta en la base de datos
     
@@ -129,7 +128,7 @@ def delete(sock, service, msg):
             WHERE id = :id
         """,
         "params": {
-            "id": fields['id']
+            "id": msg['eliminar']
         }
     }
     db_request = process_db_request(sock, db_sql)

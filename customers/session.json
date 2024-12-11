@@ -1,9 +1,9 @@
 {
-  "rut": "203357575",
-  "nombre": "felipe",
-  "apellido": "munozz",
-  "celular": "936752459",
-  "rol": "medico",
-  "area": "medicina",
+  "rut": "1122334455",
+  "nombre": "matias",
+  "apellido": "valenzuela",
+  "celular": "912345678",
+  "rol": "",
+  "area": "",
   "autenticado": "true"
 }

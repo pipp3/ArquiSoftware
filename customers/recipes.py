@@ -51,8 +51,7 @@ def eliminar_receta(sock,service):
     print("\n[ - Eliminar Receta - ]")
     id = input("Ingrese el id de la receta: ")
     datos = {
-        "eliminar":"some",
-        "id": id
+        "eliminar":id
         
     }
     status, data = service_request(sock, service, datos)
@@ -111,7 +110,7 @@ def print_menu_medico():
 
 def print_menu_paciente():
     print("\n[ - Servicio de Recetas/Medicamentos (Paciente) - ]")
-    print("[1] Leer Mis Ultimas recetas.")
+    print("[1] Leer Mis recetas.")
     print("[0] Salir.")
     
 
@@ -150,7 +149,7 @@ def main_client():
                     if choice == '0':
                         break
                     elif choice == '1':
-                        leer_receta(sock=sock,service= service)
+                        leer_recetas_paciente(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
             else:

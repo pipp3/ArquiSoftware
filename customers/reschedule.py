@@ -8,10 +8,12 @@ def actualizar_hora(sock, service):
     print("[ - Re-Agendar Hora - ]")
     cita_id = input_field("Ingrese el ID de la cita a re-agendar: ", max_length=10)
     fecha = input("Ingrese la nueva fecha de la cita (DD-MM-AAAA): ")
+    bloque_id = input_field("Ingrese el ID del bloque horario: ", max_length=10)
     datos = {
         "actualizar":"some",
         "cita_id": cita_id,
         "fecha": fecha,
+        "bloque_id": bloque_id
         
     }
     status, data = service_request(sock, service, datos)
@@ -58,6 +60,23 @@ def listar_mis_citas(sock, service):
     else:
         print(f"Error al mostrar las citas: {data}.")
 
+def listar_mis_citas_medico(sock, service):
+    session = get_session()
+    print("[ - Listar Mis Citas - ]")
+    datos = {
+        "leer":"some",
+        "rut_medico": session['rut']
+        
+    }
+    status, data = service_request(sock, service, datos)
+    print_select(status, data)
+    if status == 'OK':
+        print("Citas mostradas con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al mostrar las citas: {data}.")
+
 def print_menu_admin():
     print("\n[ - Servicio de Re-Agendacion de Horas (Admin) - ]")
     print("[1] Re-Agendar Hora.")
@@ -68,6 +87,11 @@ def print_menu_paciente():
     print("\n[ - Servicio de Re-Agendacionn de Horas (Paciente) - ]")
     print("[1] Re-Agendar Hora.")
     print("[2] Listar Mis Citas.")
+    print("[0] Salir.")
+
+def print_menu_medico():
+    print("\n[ - Servicio de Re-Agendacionn de Horas (Medico) - ]")
+    print("[1] Listar Mis Citas.")
     print("[0] Salir.")
 
 def main_client():
@@ -92,6 +116,17 @@ def main_client():
                         listar_citas(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
+            elif session['rol']=='medico':
+                while True:
+                    print_menu_medico()
+                    choice = input_field("Ingrese el número de la opción que desea ejecutar: ", max_length=1)
+                    if choice == '0':
+                        break
+                    elif choice == '1':
+                        listar_mis_citas_medico(sock=sock,service= service)
+                    else:
+                        print("Opción no válida. Intente de nuevo.")
+
                         
             elif session['rol']=='':
                 while True:

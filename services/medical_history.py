@@ -14,7 +14,24 @@ def read(sock, service, msg):
     *   Recibe el socket, el servicio y el mensaje.
     *   Si el mensaje es 'some' se leerán los registros que cumplan con los campos del mensaje.
     """
-    if msg['leer'] == 'some':
+    if msg['leer'] == 'all':
+        db_sql = {
+            "sql": "SELECT * FROM historial_medico WHERE rut_paciente = :rut_paciente",
+            "params": {
+                "rut_paciente": msg['rut_paciente']
+            }
+        }
+        db_request=process_db_request(sock,db_sql)
+        if len(db_request) == 0:
+            return incode_response(service, {
+                "data": "No existe historial médico."
+            })
+        else:
+            return incode_response(service, {
+                "data": db_request
+            })
+    
+    elif msg['leer'] == 'some':
         if 'rut_paciente' in msg:
         
             db_sql = {
@@ -117,11 +134,6 @@ def delete(sock, service, msg):
     @   Función para borrar un registro en la tabla
     *   Recibe el socket, el servicio y el mensaje.
     """
-    fields: dict = msg['borrar']
-    if 'id' not in fields:
-        return incode_response(service, {
-            "data": "Incomplete user fields"
-        })
     
     if 'borrar' in msg:
         db_sql = {

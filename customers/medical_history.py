@@ -60,6 +60,21 @@ def ver_historial_medico(sock, service):
     else:
         print(f"Error al mostrar el historial médico: {data}.")
 
+def ver_historial_medico_paciente(sock, service):
+    session=get_session()
+    print("[ - Ver Historial Médico - ]")
+    datos = {
+        "leer": "all",
+        "rut_paciente": session['rut']
+    }
+    status, data = service_request(sock, service, datos)
+    print_select(status, data)
+    if status == 'OK':
+        print("Historial médico mostrado con éxito.")
+        sock.close()
+        sys.exit()
+    else:
+        print(f"Error al mostrar el historial médico: {data}.")
 
 def eliminar_historial_medico(sock, service):
     print("[ - Eliminar Historial Médico - ]")
@@ -104,6 +119,11 @@ def print_menu_medico():
     print("4. Actualizar historial médico")
     print("0. Salir")
 
+def print_menu_paciente():
+    print("\nMenú de Paciente:")
+    print("1. Ver historial médico")
+    print("0. Salir")
+    
 def main_client():
     service='histo'
     
@@ -132,7 +152,16 @@ def main_client():
                         actualizar_historial_medico(sock=sock,service= service)
                     else:
                         print("Opción no válida. Intente de nuevo.")
-
+            if session['rol']=='':
+                while True:
+                    print_menu_paciente()
+                    choice = input_field("Ingrese el número de la opción que desea ejecutar: ", max_length=1)
+                    if choice == '0':
+                        break
+                    elif choice == '1':
+                        ver_historial_medico_paciente(sock=sock,service= service)
+                    else:
+                        print("Opción no válida. Intente de nuevo.")
         except ConnectionRefusedError:
             print('No se pudo conectar al bus.')
         except KeyboardInterrupt:

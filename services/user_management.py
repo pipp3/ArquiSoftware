@@ -92,7 +92,7 @@ def read(sock, service, msg):
         
         if msg['tipo'] == "paciente" :
             db_sql_paciente = {
-                "sql": "SELECT rut, nombre, apellido ,celular FROM pacientes"
+                "sql": "SELECT rut, nombre, apellido ,celular FROM pacientes LIMIT 5"
             }
             db_request = process_db_request(sock, db_sql_paciente)
             if len(db_request) == 0:
@@ -105,7 +105,7 @@ def read(sock, service, msg):
                 })
         elif msg['tipo'] == 'funcionario':
             db_sql_funcionario = {
-                "sql": "SELECT rut, nombre, apellido, celular, rol, area FROM funcionarios"
+                "sql": "SELECT rut, nombre, apellido, celular, rol, area FROM funcionarios LIMIT 5"
             }
             db_request = process_db_request(sock, db_sql_funcionario)
             if len(db_request) == 0:
@@ -387,35 +387,48 @@ def delete(sock, service, msg):
     *   Ejemplo:    "borrar": "juanito"
     """
     #   Opción de borrar usuarios
-        
-    db_sql_paciente = {
-            "sql": "DELETE FROM pacientes WHERE rut = :rut",
-            "params": {
-                "rut": msg['borrar']
-            }
-        }
-    db_request = process_db_request(sock, db_sql_paciente)
-    if 'affected_rows' in db_request:
-            return incode_response(service, {
-                "data": f"Se elimino {db_request['affected_rows']} usuarios."
-            })
-    else:
-        db_sql_funcionario = {
-                "sql": "DELETE FROM funcionarios WHERE rut = :rut",
-                "params": {
-                    "rut": msg['borrar']
+    if 'borrar' in msg:
+            if msg['tipo'] == 'paciente':
+                db_sql = {
+                    "sql": "DELETE FROM pacientes WHERE rut = :rut",
+                    "params": {
+                        "rut": msg['borrar']
+                    }
                 }
-            }
-        db_request_funcionario = process_db_request(sock, db_sql_funcionario)
-        if 'affected_rows' in db_request_funcionario:
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se eliminaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            elif msg['tipo'] == 'funcionario':
+                db_sql = {
+                    "sql": "DELETE FROM funcionarios WHERE rut = :rut",
+                    "params": {
+                        "rut": msg['borrar']
+                    }
+                }
+                db_request = process_db_request(sock, db_sql)
+                if 'affected_rows' in db_request:
+                    return incode_response(service, {
+                        "data": f"Se eliminaron {db_request['affected_rows']} usuarios."
+                    })
+                else:
+                    return incode_response(service, {
+                        "data": db_request
+                    })
+            else:
                 return incode_response(service, {
-                    "data": f"Se elimino {db_request_funcionario['affected_rows']} usuarios."
+                    "data": "No valid options."
                 })
-        else:
-                return incode_response(service, {
-                    "data": db_request_funcionario
-                })
-        
+    else:
+        return incode_response(service, {
+            "data": "No valid options."
+        })
+
 
 
 

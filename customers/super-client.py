@@ -28,6 +28,7 @@ def print_menu_medico():
     print("1. Servicio de historial médico")
     print("2. Servicio de notificaciones")
     print("3. Servicio de recetas")
+    print("4. Servicio de re-agendamiento de horas")
     print("0. Salir")
 
 def execute_file(file_path):
@@ -69,7 +70,8 @@ def handle_medico_menu():
         files = {
             '1': 'medical_history.py',
             '2': 'notification.py',
-            '3': 'recipes.py'
+            '3': 'recipes.py',
+            '4': 'reschedule.py'
         }
         
         if choice in files:

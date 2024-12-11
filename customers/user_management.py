@@ -51,8 +51,8 @@ def crear_funcionario(sock, service):
 
 def leer_usuario(sock, service):
     print("[ - Leer Usuario - ]")
-    print("[1] Leer todos los Pacientes.")
-    print("[2] Leer todos los Funcionarios.")
+    print("[1] Leer 5 Pacientes.")
+    print("[2] Leer 5 Funcionarios.")
     print("[3] Buscar por RUT.")
     print("[4] Buscar por Celular.")
    
@@ -233,12 +233,25 @@ def actualizar_funcionario(sock, service):
     else:
         print("No existe esa opción.")
 
-def borrar_usuario(sock, service):
-    print("[ - Borrar Funcionario o Paciente - ]")
-    rut = input_field("Ingrese un rut: ", max_length=20)
+def borrar_paciente(sock, service):
+    print("[ - Borrar Paciente - ]")
+    rut = input_field("Ingrese un RUT de Paciente: ", max_length=20)
     #   Definimos la opción que elija como un diccionario
     datos = {
-        "borrar": rut
+        "borrar": rut,
+        "tipo": "paciente"
+    }
+    #   Enviamos los datos al servicio
+    status, data = service_request(sock, service, datos)
+    print_ins_del_upd(status, data)
+
+def borrar_funcionario(sock, service):
+    print("[ - Borrar Funcionario - ]")
+    rut = input_field("Ingrese un RUT de Funcionario: ", max_length=20)
+    #   Definimos la opción que elija como un diccionario
+    datos = {
+        "borrar": rut,
+        "tipo": "funcionario"
     }
     #   Enviamos los datos al servicio
     status, data = service_request(sock, service, datos)
@@ -266,7 +279,8 @@ def main_client():
                 print("[3] Leer Usuarios.")
                 print("[4] Actualizar un Paciente.")
                 print("[5] Actualizar un Funcionario.")
-                print("[6] Borrar un Usuario.")
+                print("[6] Borrar un Paciete.")
+                print("[7] Borrar un Funcionario.")
                 print("[0] Salir.")
                 opcion = input("Ingrese una opción: ")
 
@@ -290,7 +304,9 @@ def main_client():
                     actualizar_funcionario(sock=sock, service=service)
 
                 elif opcion == '6':
-                    borrar_usuario(sock=sock, service=service)
+                    borrar_paciente(sock=sock, service=service)
+                elif opcion == '7':
+                    borrar_funcionario(sock=sock, service=service)
 
                 else:
                     print("Opción erronea. Intente nuevamente.")

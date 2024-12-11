@@ -71,7 +71,7 @@ def read(sock,service,msg):
     if msg["leer"]=="all":
         
             db_sql={
-                "sql":"SELECT * FROM notificaciones ORDER BY fecha DESC LIMIT 5",
+                "sql":"SELECT * FROM notificaciones ORDER BY id DESC LIMIT 5",
             }
             db_request=process_db_request(sock,db_sql)
             if(len(db_request)==0):
@@ -149,38 +149,7 @@ def read(sock,service,msg):
                 return incode_response(service,{
                     "data":db_request
                 })
-        elif "rut" in msg:
-            db_sql = {
-                "sql": """
-                    WITH usuario_tipo AS (
-                        SELECT 'paciente' AS tipo
-                        FROM pacientes
-                        WHERE rut = :rut
-                        UNION ALL
-                        SELECT 'medico' AS tipo
-                        FROM funcionarios
-                        WHERE rut = :rut
-                    )
-                    SELECT n.id, n.mensaje, n.fecha
-                    FROM notificaciones n
-                    JOIN citas c ON n.cita_id = c.id
-                    WHERE c.rut_paciente = :rut OR c.rut_medico = :rut
-                    ORDER BY n.fecha DESC
-                    LIMIT 5;
-                """,
-                "params": {
-                    "rut": msg["rut"]
-                    }
-                }
-            db_request=process_db_request(sock,db_sql)
-            if(len(db_request)==0):
-                return incode_response(service,{
-                    "data":"No notifications found."
-                    })
-            else:
-                return incode_response(service,{
-                    "data":db_request
-                    })
+        
         elif "rut" and "id_noti" in msg:
             db_sql = {
                 "sql": """
@@ -213,6 +182,38 @@ def read(sock,service,msg):
                 return incode_response(service,{
                     "data":db_request
                 })
+        elif "rut" in msg:
+            db_sql = {
+                "sql": """
+                    WITH usuario_tipo AS (
+                        SELECT 'paciente' AS tipo
+                        FROM pacientes
+                        WHERE rut = :rut
+                        UNION ALL
+                        SELECT 'medico' AS tipo
+                        FROM funcionarios
+                        WHERE rut = :rut
+                    )
+                    SELECT n.id, n.mensaje, n.fecha
+                    FROM notificaciones n
+                    JOIN citas c ON n.cita_id = c.id
+                    WHERE c.rut_paciente = :rut OR c.rut_medico = :rut
+                    ORDER BY n.fecha DESC
+                    LIMIT 5;
+                """,
+                "params": {
+                    "rut": msg["rut"]
+                    }
+                }
+            db_request=process_db_request(sock,db_sql)
+            if(len(db_request)==0):
+                return incode_response(service,{
+                    "data":"No notifications found."
+                    })
+            else:
+                return incode_response(service,{
+                    "data":db_request
+                    })
 
     else:
         return incode_response(service,{
